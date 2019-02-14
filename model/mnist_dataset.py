@@ -36,11 +36,12 @@ def check_image_file_header(filename):
         rows = read32(f)
         cols = read32(f)
         if magic != 2051:
-            raise ValueError('Invalid magic number %d in MNIST file %s' % (magic, f.name))
+            raise ValueError(
+                'Invalid magic number %d in MNIST file %s' % (magic, f.name))
         if rows != 28 or cols != 28:
             raise ValueError(
-                    'Invalid MNIST file %s: Expected 28x28 images, found %dx%d' %
-                    (f.name, rows, cols))
+                'Invalid MNIST file %s: Expected 28x28 images, found %dx%d' %
+                (f.name, rows, cols))
 
 
 def check_labels_file_header(filename):
@@ -49,7 +50,8 @@ def check_labels_file_header(filename):
         magic = read32(f)
         read32(f)  # num_items, unused
         if magic != 2049:
-            raise ValueError('Invalid magic number %d in MNIST file %s' % (magic, f.name))
+            raise ValueError(
+                'Invalid magic number %d in MNIST file %s' % (magic, f.name))
 
 
 def download(directory, filename):
@@ -60,7 +62,8 @@ def download(directory, filename):
     if not tf.gfile.Exists(directory):
         tf.gfile.MakeDirs(directory)
     # CVDF mirror of http://yann.lecun.com/exdb/mnist/
-    url = 'https://storage.googleapis.com/cvdf-datasets/mnist/' + filename + '.gz'
+
+    url = 'http://yann.lecun.com/exdb/mnist/' + filename + '.gz'
     zipped_filepath = filepath + '.gz'
     print('Downloading %s to %s' % (url, zipped_filepath))
     urllib.request.urlretrieve(url, zipped_filepath)
@@ -91,9 +94,11 @@ def dataset(directory, images_file, labels_file):
         label = tf.reshape(label, [])  # label is a scalar
         return tf.to_int32(label)
 
-    images = tf.data.FixedLengthRecordDataset(images_file, 28 * 28, header_bytes=16)
+    images = tf.data.FixedLengthRecordDataset(
+        images_file, 28 * 28, header_bytes=16)
     images = images.map(decode_image)
-    labels = tf.data.FixedLengthRecordDataset(labels_file, 1, header_bytes=8).map(decode_label)
+    labels = tf.data.FixedLengthRecordDataset(
+        labels_file, 1, header_bytes=8).map(decode_label)
     return tf.data.Dataset.zip((images, labels))
 
 
