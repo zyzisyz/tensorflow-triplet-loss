@@ -1,0 +1,1 @@
+python train.py --model_dir experiments/base_model
