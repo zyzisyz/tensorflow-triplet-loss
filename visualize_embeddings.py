@@ -16,10 +16,13 @@ from model.model_fn import model_fn
 
 
 parser = argparse.ArgumentParser()
+
 parser.add_argument('--model_dir', default='experiments/base_model',
                     help="Experiment directory containing params.json")
+
 parser.add_argument('--data_dir', default='data/mnist',
                     help="Directory containing the dataset")
+
 parser.add_argument('--sprite_filename', default='experiments/mnist_10k_sprite.png',
                     help="Sprite image for the projector")
 
