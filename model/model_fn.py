@@ -13,7 +13,7 @@ def build_model(is_training, images, params):
         is_training: (bool) whether we are training or not
         images: (dict) contains the inputs of the graph (features)
                 this can be `tf.placeholder` or outputs of `tf.data`
-        params: (Params) hyperparameters 超参数
+        params: (Params) hyperparameters 
 
     Returns:
         output: (tf.Tensor) output of the model
@@ -21,15 +21,18 @@ def build_model(is_training, images, params):
     out = images
     # Define the number of channels of each convolution
     # For each block, we do: 3x3 conv -> batch norm -> relu -> 2x2 maxpool
+    # 将每一层前的输入包括输入层的x和隐藏层的a均进行减去均值除以方差的操作
+
     num_channels = params.num_channels
     bn_momentum = params.bn_momentum
     channels = [num_channels, num_channels * 2]
-
+    
     for i, c in enumerate(channels):
         with tf.variable_scope('block_{}'.format(i+1)):
             out = tf.layers.conv2d(out, c, 3, padding='same')
             if params.use_batch_norm:
-                out = tf.layers.batch_normalization(out, momentum=bn_momentum, training=is_training)
+                out = tf.layers.batch_normalization(
+                    out, momentum=bn_momentum, training=is_training)
             out = tf.nn.relu(out)
             out = tf.layers.max_pooling2d(out, 2, 2)
 
@@ -58,13 +61,17 @@ def model_fn(features, labels, mode, params):
 
     images = features
     images = tf.reshape(images, [-1, params.image_size, params.image_size, 1])
-    assert images.shape[1:] == [params.image_size, params.image_size, 1], "{}".format(images.shape)
+    assert images.shape[1:] == [params.image_size,
+                                params.image_size, 1], "{}".format(images.shape)
 
     # -----------------------------------------------------------
     # MODEL: define the layers of the model
     with tf.variable_scope('model'):
         # Compute the embeddings with the model
         embeddings = build_model(is_training, images, params)
+
+    # tf.norm计算向量、矩阵和张量的范数。axis=1表示按行向量处理，求多个行向量的范数
+    # ord=2 默认情况下，是求整体的矩阵元素平方和，再开根号
     embedding_mean_norm = tf.reduce_mean(tf.norm(embeddings, axis=1))
     tf.summary.scalar("embedding_mean_norm", embedding_mean_norm)
 
@@ -82,21 +89,23 @@ def model_fn(features, labels, mode, params):
         loss = batch_hard_triplet_loss(labels, embeddings, margin=params.margin,
                                        squared=params.squared)
     else:
-        raise ValueError("Triplet strategy not recognized: {}".format(params.triplet_strategy))
+        raise ValueError("Triplet strategy not recognized: {}".format(
+            params.triplet_strategy))
 
     # -----------------------------------------------------------
     # METRICS AND SUMMARIES
     # Metrics for evaluation using tf.metrics (average over whole dataset)
     # TODO: some other metrics like rank-1 accuracy?
+    # metrics评估指标
     with tf.variable_scope("metrics"):
-        eval_metric_ops = {"embedding_mean_norm": tf.metrics.mean(embedding_mean_norm)}
+        eval_metric_ops = {
+            "embedding_mean_norm": tf.metrics.mean(embedding_mean_norm)}
 
         if params.triplet_strategy == "batch_all":
             eval_metric_ops['fraction_positive_triplets'] = tf.metrics.mean(fraction)
 
     if mode == tf.estimator.ModeKeys.EVAL:
         return tf.estimator.EstimatorSpec(mode, loss=loss, eval_metric_ops=eval_metric_ops)
-
 
     # Summaries for training
     tf.summary.scalar('loss', loss)

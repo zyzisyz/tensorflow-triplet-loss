@@ -163,6 +163,8 @@ def batch_all_triplet_loss(labels, embeddings, margin, squared=False):
     valid_triplets = tf.to_float(tf.greater(triplet_loss, 1e-16))
     num_positive_triplets = tf.reduce_sum(valid_triplets)
     num_valid_triplets = tf.reduce_sum(mask)
+
+    
     fraction_positive_triplets = num_positive_triplets / (num_valid_triplets + 1e-16)
 
     # Get final mean triplet loss over the positive valid triplets

@@ -11,8 +11,10 @@ from model.utils import Params
 
 
 parser = argparse.ArgumentParser()
+
 parser.add_argument('--model_dir', default='experiments/base_model',
                     help="Experiment directory containing params.json")
+
 parser.add_argument('--data_dir', default='data/mnist',
                     help="Directory containing the dataset")
 
@@ -34,7 +36,12 @@ if __name__ == '__main__':
         model_fn, params=params, model_dir=args.model_dir)
 
     # Evaluate the model on the test set
-    tf.logging.info("Evaluation on the test set.")
-    res = estimator.predict(lambda: test_input_fn(args.data_dir, params))
-    for i in res:
-        embedding_vetor = i["embedding"]
+    tf.logging.info("Predict on the test set.")
+
+    print("dataset,", test_input_fn(args.data_dir, params))
+
+    res = estimator.predict(
+        lambda: test_input_fn(args.data_dir, params))
+
+    print(next(res)['embeddings'].shape)
+
