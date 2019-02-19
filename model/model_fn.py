@@ -27,6 +27,7 @@ def build_model(is_training, images, params):
     bn_momentum = params.bn_momentum
     channels = [num_channels, num_channels * 2]
     
+    # 循环两次
     for i, c in enumerate(channels):
         with tf.variable_scope('block_{}'.format(i+1)):
             out = tf.layers.conv2d(out, c, 3, padding='same')
