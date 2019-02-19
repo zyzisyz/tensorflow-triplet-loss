@@ -4,6 +4,7 @@ import tensorflow as tf
 
 import model.mnist_dataset as mnist_dataset
 
+# prefetch是预读文件
 
 def train_input_fn(data_dir, params):
     """Train input function for the MNIST dataset.
